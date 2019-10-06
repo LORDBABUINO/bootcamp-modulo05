@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 import { FaGithubAlt, FaPlus, FaSpinner } from 'react-icons/fa'
 
 import api from '../../services/api'
-import Container from '../../components/container'
 
+import Container from '../../components/container'
 import { Form, SubmitButton, List } from './styles'
 
 class Main extends Component {
@@ -12,6 +12,7 @@ class Main extends Component {
     newRepo: '',
     repositories: [],
     loading: false,
+    valid: true,
   }
 
   componentDidMount() {
@@ -27,40 +28,51 @@ class Main extends Component {
 
   handleInputChange = e => {
     const newRepo = e.target.value
-    this.setState({ newRepo })
+    this.setState({ newRepo, valid: true })
   }
 
   handleSubmit = async e => {
     e.preventDefault()
     this.setState({ loading: true })
 
-    const { newRepo, repositories } = this.state
-    const response = await api.get(`/repos/${newRepo}`)
-    const { full_name: name } = response.data
+    try {
+      const { newRepo, repositories } = this.state
+      const response = await api.get(`/repos/${newRepo}`)
+      const { full_name: name } = response.data
+
+      if (repositories.includes(name)) throw new Error('Duplicated repository')
+
+      this.setState({
+        repositories: [...repositories, name],
+        newRepo: '',
+      })
+    } catch (error) {
+      this.setState({
+        valid: false,
+      })
+    }
 
     this.setState({
-      repositories: [...repositories, name],
-      newRepo: '',
       loading: false,
     })
   }
 
   render() {
-    const { newRepo, loading, repositories } = this.state
+    const { newRepo, loading, repositories, valid } = this.state
     return (
       <Container>
         <h1>
           <FaGithubAlt />
           Repositórios
         </h1>
-        <Form onSubmit={this.handleSubmit}>
+        <Form onSubmit={this.handleSubmit} valid={valid ? 1 : 0}>
           <input
             type="text"
             placeholder="Adicionar repositório"
             value={newRepo}
             onChange={this.handleInputChange}
           />
-          <SubmitButton loading={loading}>
+          <SubmitButton loading={loading ? 1 : 0}>
             {loading ? (
               <FaSpinner color="white" size={14} />
             ) : (

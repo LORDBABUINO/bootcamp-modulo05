@@ -8,6 +8,9 @@ export const Form = styled.form`
   input {
     flex: 1;
     border: 1px solid #ddd;
+    border-width: 1px;
+    border-style: solid;
+    border-color: ${props => (props.valid ? '#ddd' : 'red')};
     padding: 10px 15px;
     border-radius: 4px;
     font-size: 16px;

@@ -1,16 +1,19 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa'
 import PropTypes from 'prop-types'
 import api from '../../services/api'
 
 import Container from '../../components/container'
-import { Loading, Owner, IssueList } from './styles'
+import { Loading, Owner, IssueList, Filter, Paginator } from './styles'
 
 class Repository extends Component {
   state = {
     repository: {},
     issues: [],
     loading: true,
+    filter: 'open',
+    page: 1,
   }
 
   async componentDidMount() {
@@ -33,11 +36,55 @@ class Repository extends Component {
     })
   }
 
+  handleFilter = async e => {
+    const filter = e.target.value
+    const {
+      repository: { full_name: name },
+    } = this.state
+
+    this.setState({ filter, loading: true })
+    const { data: issues } = await api.get(`/repos/${name}/issues`, {
+      params: {
+        state: filter,
+        per_page: 5,
+      },
+    })
+
+    this.setState({
+      issues,
+      loading: false,
+      page: 1,
+    })
+  }
+
+  handlePagination = page => async () => {
+    this.setState({ loading: true, page })
+    const {
+      repository: { full_name: name },
+      filter,
+    } = this.state
+
+    const { data: issues } = await api.get(`/repos/${name}/issues`, {
+      params: {
+        state: filter,
+        per_page: 5,
+        page,
+      },
+    })
+
+    this.setState({
+      issues,
+      loading: false,
+    })
+  }
+
   render() {
     const {
       repository: { name, description, owner },
       issues,
       loading,
+      filter,
+      page,
     } = this.state
     return loading ? (
       <Loading>Carregando</Loading>
@@ -50,6 +97,41 @@ class Repository extends Component {
           <p>{description}</p>
         </Owner>
         <IssueList>
+          <Filter>
+            <label>
+              <input
+                type="radio"
+                name="state"
+                id="stateOpen"
+                value="open"
+                checked={filter === 'open'}
+                onChange={this.handleFilter}
+              />
+              abertas
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="state"
+                id="stateAll"
+                value="all"
+                checked={filter === 'all'}
+                onChange={this.handleFilter}
+              />
+              todas
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="state"
+                id="stateClosed"
+                value="closed"
+                checked={filter === 'closed'}
+                onChange={this.handleFilter}
+              />
+              fechadas
+            </label>
+          </Filter>
           {issues.map(
             ({
               id,
@@ -72,6 +154,16 @@ class Repository extends Component {
               </li>
             )
           )}
+          <Paginator>
+            <button type="button" onClick={this.handlePagination(page + 1)}>
+              <FaArrowRight />
+            </button>
+            {page !== 1 && (
+              <button type="button" onClick={this.handlePagination(page - 1)}>
+                <FaArrowLeft />
+              </button>
+            )}
+          </Paginator>
         </IssueList>
       </Container>
     )

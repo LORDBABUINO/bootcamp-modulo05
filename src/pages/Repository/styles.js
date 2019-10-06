@@ -90,7 +90,6 @@ export const IssueList = styled.ul`
           padding: 3px 4px;
           margin-left: 10px;
         }
-        /**/
       }
 
       p {
@@ -98,6 +97,35 @@ export const IssueList = styled.ul`
         font-size: 12px;
         color: #999;
       }
+    }
+  }
+`
+
+export const Filter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 30px;
+  padding: 0 10px;
+
+  label {
+    display: flex;
+    align-items: center;
+
+    input {
+      margin-right: 10px;
+    }
+  }
+`
+
+export const Paginator = styled.div`
+  margin-top: 20px;
+  min-height: 28px;
+
+  button {
+    &:first-of-type {
+      float: right;
     }
   }
 `
